@@ -7,7 +7,6 @@ from groups.models import Group
 from pets.models import Pet
 from traits.models import Trait
 from tests.factories.pet_factories import create_multiple_pets
-import ipdb
 
 
 class PetViewsTest(APITestCase):
