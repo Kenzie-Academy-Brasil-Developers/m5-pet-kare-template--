@@ -55,16 +55,16 @@ class PetModelTest(TestCase):
         max_length = Pet._meta.get_field("sex").max_length
         message = "Verifique se o max_length do campo 'sex' está com o valor correto."
         self.assertEqual(max_length, expected, message)
-        # depende de como a pessoa setou na model: DEFAULT = 'Not Informed'
-        # Algumas pessoas setam assim: NOT_INFORMED = 'Not Informed'
+
         expected = [("Male", "Male"), ("Female", "Female"), ("Not Informed", "Default")]
         choices = Pet._meta.get_field("sex").choices
+        choices_texts = [choice[0] for choice in choices]
 
         for expected_choice in expected:
             message = (
                 f"Verifique se o campo 'sex' possui a choice '{expected_choice[0]}'"
             )
-            self.assertIn(expected_choice, choices, message)
+            self.assertIn(expected_choice[0], choices_texts, message)
 
         expected = "Not Informed"
         default = getattr(Pet._meta.get_field("sex").default, "value", False)

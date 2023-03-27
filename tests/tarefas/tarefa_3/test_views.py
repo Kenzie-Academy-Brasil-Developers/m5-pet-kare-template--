@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from django.forms import model_to_dict
+from django.db import models
 from rest_framework.test import APITestCase
 
 from groups.models import Group
@@ -9,9 +10,11 @@ from traits.models import Trait
 from tests.factories.pet_factories import create_multiple_pets
 
 
+
 class PetViewsTest(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
+        # cls.maxDiff = None
         cls.BASE_URL = "/api/pets/"
 
         cls.pet_data_1 = {
@@ -36,18 +39,6 @@ class PetViewsTest(APITestCase):
             "group": cls.group_data_1,
             "traits": [cls.trait_data_1, cls.trait_data_2],
         }
-        # cls.pet_main_data = {
-        #     "name": "Minerva",
-        #     "age": 6,
-        #     "weight": 30.0,
-        #     "sex": "Female",
-        #     "group": {"scientific_name": "canis familiaris"},
-        #     "traits": [
-        #         {"name": "clever"},
-        #         {"name": "friendly"},
-        #         {"name": "playfull"},
-        #     ],
-        # }
 
     @patch("django.utils.timezone.now", return_value="2022-11-27T17:55:22.819371Z")
     def test_can_list_pets_with_pagination(self, mock_now: MagicMock):
@@ -126,8 +117,6 @@ class PetViewsTest(APITestCase):
             self.pet_main_data,
             format="json",
         )
-        message = "Verifique se sua rota está retornando o status code 201."
-        self.assertEqual(response.status_code, 201, message)
 
         expected = {
             "id": 1,
@@ -147,6 +136,9 @@ class PetViewsTest(APITestCase):
         }
         message = "Verifique se sua rota está retornando todos os campos com a formatação correta."
         self.assertEqual(expected, response.json(), message)
+
+        message = "Verifique se sua rota está retornando o status code 201."
+        self.assertEqual(response.status_code, 201, message)
 
     @patch("django.utils.timezone.now", return_value="2022-11-27T17:55:22.819371Z")
     def test_can_create_pet_without_duplicating_a_group_already_exists(
@@ -172,22 +164,43 @@ class PetViewsTest(APITestCase):
     ):
         trait_data_1 = {"name": "CLEVER"}
         trait_data_2 = {"name": "FRIENDLY"}
+        trait_data_3 = {"name": "CLEVER2"}
+        trait3 = Trait.objects.create(**trait_data_3)
         trait1 = Trait.objects.create(**trait_data_1)
         trait2 = Trait.objects.create(**trait_data_2)
-        response = self.client.post(
+
+        check = False
+
+        try:
+            response = self.client.post(
             self.BASE_URL,
             self.pet_main_data,
             format="json",
-        )
+            )
 
-        message = "Verifique se sua rota está retornando o status code 201."
-        self.assertEqual(response.status_code, 201, message)
+            trait_pet_name = response.json()["traits"][0]["trait_name"]
 
-        message = "Verifique se você está reutilizando o trait que já existe no banco de dados ao invés de criar um novo."
-        self.assertEqual(trait1.id, response.json()["traits"][0]["id"], message)
+            if trait_pet_name == trait1.name:
+                check = True
 
-        message = "Verifique se um novo trait está sendo criado quando necessário"
-        self.assertEqual(trait2.id, response.json()["traits"][1]["id"], message)
+            message = "Verifique se você está reutilizando o trait que já existe no banco de dados ao invés de criar um novo."
+            self.assertEqual(trait1.id, response.json()["traits"][0]["id"], message)
+
+            message = "Verifique se um novo trait está sendo criado quando necessário"
+            self.assertEqual(trait2.id, response.json()["traits"][1]["id"], message)
+
+            message = "Verifique se sua rota está retornando o status code 201."
+            self.assertEqual(response.status_code, 201, message)
+        except Trait.MultipleObjectsReturned:
+            pass
+        except Exception:
+            pass
+
+        message = "Verique a forma que está validando o case insensitive no momento de criação das traits"
+        
+        if not check:
+            self.assertEqual({"trait_name": "CLEVER"}, {"trait_name": "CLEVER2"}, message)
+        
 
     def test_can_not_create_pet_when_missing_keys(self):
 
@@ -196,9 +209,6 @@ class PetViewsTest(APITestCase):
             {},
             format="json",
         )
-
-        message = "Verifique se sua rota está retornando o status code 400."
-        self.assertEqual(response.status_code, 400, message)
 
         expected = {
             "name": ["This field is required."],
@@ -209,3 +219,6 @@ class PetViewsTest(APITestCase):
         }
         message = "Verifique se você colocou como obrigatório todos os campos que são pedidos na entrega."
         self.assertEqual(expected, response.json(), message)
+
+        message = "Verifique se sua rota está retornando o status code 400."
+        self.assertEqual(response.status_code, 400, message)

@@ -13,6 +13,7 @@ class PetDetailViewsTest(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.BASE_URL = "/api/pets/"
+        cls.maxDiff = None
 
         cls.pet_data_1 = {
             "name": "strogonoff",
@@ -36,18 +37,6 @@ class PetDetailViewsTest(APITestCase):
             "group": cls.group_data_1,
             "traits": [cls.trait_data_1, cls.trait_data_2],
         }
-        # cls.pet_main_data = {
-        #     "name": "Minerva",
-        #     "age": 6,
-        #     "weight": 30.0,
-        #     "sex": "Female",
-        #     "group": {"scientific_name": "canis familiaris"},
-        #     "traits": [
-        #         {"name": "clever"},
-        #         {"name": "friendly"},
-        #         {"name": "playfull"},
-        #     ],
-        # }
 
     @patch("django.utils.timezone.now", return_value="2022-11-27T17:55:22.819371Z")
     def test_can_list_pets_by_query_param(self, mock_now: MagicMock):
@@ -70,7 +59,6 @@ class PetDetailViewsTest(APITestCase):
 
         QUERY_URL = self.BASE_URL + "?trait=clever"
         response = self.client.get(QUERY_URL, format="json")
-        # ipdb.set_trace()
 
         # Status Code
         message = "\n Verifique se sua rota está retornando o status code 200."
@@ -101,12 +89,6 @@ class PetDetailViewsTest(APITestCase):
         trait1_dict.pop('pets', '')
         trait1_name = trait1_dict.pop("name")
         trait1_dict.update({"trait_name": trait1_name})
-        # trait2_dict = {
-        #     **model_to_dict(pet2.traits.all()[1]),
-        #     "created_at": mock_now.return_value,
-        # }
-        # trait2_name = trait2_dict.pop("name")
-        # trait2_dict.update({"trait_name": trait2_name})
 
         pet_dict_1 = {
             **model_to_dict(pet1),
@@ -174,9 +156,9 @@ class PetDetailViewsTest(APITestCase):
         response = self.client.patch(URL_DETAIL, new_data, format="json")
 
         message = "Verifique se sua rota de atualização está funcionando corretamente."
-        self.assertEqual(response.status_code, 200, message)
-        self.assertEqual(new_data["name"], response.json()["name"], message)
         self.assertEqual(trait.id, response.json()["traits"][0]["id"], message)
+        self.assertEqual(new_data["name"], response.json()["name"], message)
+        self.assertEqual(response.status_code, 200, message)
 
     def test_can_update_pet_without_duplicating_existing_group(self):
         group = Group.objects.create(**self.group_data_1)
@@ -221,11 +203,15 @@ class PetDetailViewsTest(APITestCase):
         new_data = {"group": self.group_data_2}
         response = self.client.patch(URL_DETAIL, new_data, format="json")
 
+        message = "Verifique se sua rota de atualização está substituindo o grupo anterior pelo novo."
+        self.assertEqual(2, response.json()["group"]["id"], message)
+
         message = "Verifique se sua rota de atualização está retornando o status code correto."
         self.assertEqual(response.status_code, 200, message)
 
-        message = "Verifique se sua rota de atualização está substituindo o grupo anterior pelo novo."
-        self.assertEqual(2, response.json()["group"]["id"], message)
+        response_get = self.client.get(URL_DETAIL)
+        message = "Verifique se a sua rota está persistindo as mudanças no banco de dados."
+        self.assertEqual(response_get.json()["group"]["scientific_name"], self.group_data_2["scientific_name"], message)
 
     def test_can_not_update_pet_with_invalid_sex_field(self):
         group = Group.objects.create(**self.group_data_1)
@@ -247,10 +233,20 @@ class PetDetailViewsTest(APITestCase):
         URL_DETAIL = f"{self.BASE_URL}{id_does_not_exists}/"
 
         response = self.client.delete(URL_DETAIL)
-        message = (
-            "Verifique se seua rota de deleção está retornando o status code correto"
-        )
-        self.assertEqual(response.status_code, 404, message)
+        status_code = response.status_code
+
+        message = "Verifique se existe uma rota de deleção para pets"
+        dont_exist_delete_route_text = '<p>The requested resource was not found on this server.</p>'
+        error_message = str(response._container[0])
+        
+        if dont_exist_delete_route_text in error_message:
+            self.assertTrue(False, message)
+
+        self.assertEqual(response.data, {"detail": "Not found."})
+
+        message = "Verifique se sua rota de deleção está retornando o status code correto"
+        
+        self.assertEqual(status_code, 404, message)
 
     def test_can_delete_pet(self):
         group = Group.objects.create(**self.group_data_1)
@@ -258,10 +254,11 @@ class PetDetailViewsTest(APITestCase):
 
         URL_DETAIL = f"{self.BASE_URL}{pet_1.id}/"
         response = self.client.delete(URL_DETAIL)
+
+        message = "Verifique se sua rota de deleção está excluindo corretamente o pet do banco de dados."
+        self.assertEqual(0, Pet.objects.all().count(), message)
+
         message = (
             "Verifique se sua rota de deleção está retornando o status code correto."
         )
         self.assertEqual(response.status_code, 204, message)
-
-        message = "Verifique se sua rota de deleção está excluindo corretamente o pet do banco de dados."
-        self.assertEqual(0, Pet.objects.all().count(), message)
