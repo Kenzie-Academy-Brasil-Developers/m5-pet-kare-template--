@@ -10,7 +10,6 @@ from traits.models import Trait
 from tests.factories.pet_factories import create_multiple_pets
 
 
-
 class PetViewsTest(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
@@ -73,7 +72,7 @@ class PetViewsTest(APITestCase):
 
         results = response.json()["results"]
         for r in results:
-            r.pop('pets', '')
+            r.pop("pets", "")
         self.assertEqual(len(results), expected, message)
 
         group_dict = {**model_to_dict(pet1.group), "created_at": mock_now.return_value}
@@ -101,8 +100,8 @@ class PetViewsTest(APITestCase):
             "traits": [trait1_dict, trait2_dict],
             "group": group_dict,
         }
-        [a.pop('pets','') for a in pet_dict_1["traits"]]
-        [a.pop('pets','') for a in pet_dict_2["traits"]]
+        [a.pop("pets", "") for a in pet_dict_1["traits"]]
+        [a.pop("pets", "") for a in pet_dict_2["traits"]]
         pets = [pet_dict_1, pet_dict_2]
 
         message = "Verifique se sua rota está retornando todos os campos corretamente."
@@ -173,9 +172,9 @@ class PetViewsTest(APITestCase):
 
         try:
             response = self.client.post(
-            self.BASE_URL,
-            self.pet_main_data,
-            format="json",
+                self.BASE_URL,
+                self.pet_main_data,
+                format="json",
             )
 
             trait_pet_name = response.json()["traits"][0]["trait_name"]
@@ -197,13 +196,13 @@ class PetViewsTest(APITestCase):
             pass
 
         message = "Verique a forma que está validando o case insensitive no momento de criação das traits"
-        
+
         if not check:
-            self.assertEqual({"trait_name": "CLEVER"}, {"trait_name": "CLEVER2"}, message)
-        
+            self.assertEqual(
+                {"trait_name": "CLEVER"}, {"trait_name": "CLEVER2"}, message
+            )
 
     def test_can_not_create_pet_when_missing_keys(self):
-
         response = self.client.post(
             self.BASE_URL,
             {},
