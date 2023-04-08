@@ -7,7 +7,7 @@ class SexOptions(models.TextChoices):
     NOT_INFORMED = "Not informed"
 
 
-class Pets(models.Model):
+class Pet(models.Model):
     name = models.CharField(max_length=50)
     age = models.IntegerField()
     weight = models.FloatField()
@@ -18,4 +18,4 @@ class Pets(models.Model):
     group = models.ForeignKey(
         "groups.Group", related_name="pets", on_delete=models.RESTRICT
     )
-    traits = models.ManyToManyField("traits.Traits", related_name="pets", null=True)
+    traits = models.ManyToManyField("traits.Trait", related_name="pets", null=True)
