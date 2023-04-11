@@ -5,15 +5,23 @@ from .serializers import PetSerializer
 from .models import Pet
 from groups.models import Group
 from traits.models import Trait
-import ipdb
 from django.shortcuts import get_object_or_404
 
 
 class PetView(APIView, PageNumberPagination):
     def get(self, request: Request) -> Response:
-        pet_trait = request.query_params.get("trait", None)
+        pets = Pet.objects.all()
 
-        pets = Pet.objects.filter(traits=pet_trait)
+        param_trait = request.query_params.get("trait", None)
+
+        trait = Trait.objects.filter(name=param_trait).first()
+
+        if param_trait:
+            pet_filter = Pet.objects.filter(traits=trait)
+            result_page = self.paginate_queryset(pet_filter, request, view=self)
+            serializer = PetSerializer(result_page, many=True)
+            PetSerializer()
+            return self.get_paginated_response(serializer.data)
 
         result_page = self.paginate_queryset(pets, request, view=self)
         serializer = PetSerializer(result_page, many=True)
@@ -67,11 +75,14 @@ class PetDetailView(APIView):
         trait_data = serializer.validated_data.pop("traits", None)
 
         if group_data:
-            group_filter = Group.objects.filter(
+            new_group = Group.objects.filter(
                 scientific_name__iexact=group_data["scientific_name"]
             ).first()
-            if not group_filter:
-                Group.objects.create(**group_data)
+            if not new_group:
+                new_group = Group.objects.create(**group_data)
+
+            pet.group = new_group
+
         if trait_data:
             for trait_dict in trait_data:
                 trait_obj = Trait.objects.filter(
