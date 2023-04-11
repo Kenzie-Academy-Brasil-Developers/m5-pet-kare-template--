@@ -2,9 +2,9 @@ from django.db import models
 
 
 class PetSex(models.TextChoices):
-    name = "Male"
-    female = "Female"
-    not_informad = "Not Informed"
+    NAME = "Male"
+    FEMALE = "Female"
+    NOT_INFORMED = "Not Informed"
 
 
 class Pet(models.Model):
@@ -12,9 +12,11 @@ class Pet(models.Model):
     age = models.IntegerField()
     weight = models.FloatField()
     sex = models.CharField(
-        max_length=20, choices=PetSex.choices, default=PetSex.not_informad
+        max_length=20, choices=PetSex.choices, default=PetSex.NOT_INFORMED
     )
     group = models.ForeignKey(
-        "groups.Group", on_delete=models.RESTRICT, related_name="Pets"
+        "groups.Group", on_delete=models.PROTECT, related_name="pets"
     )
-    trait = models.ManyToManyField("traits.Trait", related_name="pets")
+
+    def __repr__(self) -> str:
+        return f"<Pet ({self.id}) - {self.name}>"
