@@ -56,13 +56,13 @@ pytest --testdox -vvs tests/tarefas/tarefa_1/
 - Tarefa 2
 
 ```shell
-pytest --testdox -vvs tests/tarefas/tarefa_2/
+pytest --testdox -vvs tests/tarefas/tarefa_3/
 ```
 
 - Tarefa 3
 
 ```shell
-pytest --testdox -vvs tests/tarefas/tarefa_3/
+pytest --testdox -vvs tests/tarefas/tarefa_4/
 ```
 
 Você também pode rodar cada método de teste isoladamente seguindo uma substring, adicionando a flag `-k` seguido da substring a ser encontrada
