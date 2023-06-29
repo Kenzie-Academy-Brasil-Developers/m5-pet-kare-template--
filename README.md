@@ -53,7 +53,7 @@ Exemplo:
 pytest --testdox -vvs tests/tarefas/tarefa_1/
 ```
 
-- Tarefa 2
+- Tarefa 3
 
 ```shell
 pytest --testdox -vvs tests/tarefas/tarefa_3/
