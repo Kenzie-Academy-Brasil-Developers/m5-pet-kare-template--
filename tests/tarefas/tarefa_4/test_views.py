@@ -191,8 +191,9 @@ class PetDetailViewsTest(APITestCase):
         self.assertEqual(response.status_code, 200, message)
 
         message = "Verifique se sua rota de atualização está substituindo todas as traits antigas e deixando somente as novas"
+        expected_pet_traits_length = 1
         self.assertEqual(
-            pet_1.traits.first().id, response.json()["traits"][0]["id"], message
+            expected_pet_traits_length, pet_1.traits.count(), message
         )
 
     def test_can_update_pet_group(self):
