@@ -18,13 +18,13 @@ pip uninstall pytest pytest-testdox -y
 
 ## Próximos passos:
 
-### 1 Crie seu ambiente virtual:
+### 1. Crie seu ambiente virtual:
 
 ```shell
 python -m venv venv
 ```
 
-### 2 Ative seu venv:
+### 2. Ative seu venv:
 
 ```shell
 # linux:
@@ -37,13 +37,13 @@ source venv/bin/activate
 source venv/Scripts/activate
 ```
 
-### 3 Instalar o pacote <strong>pytest-testdox</strong>:
+### 3. Instalar o pacote <strong>pytest-testdox</strong>:
 
 ```shell
 pip install pytest-testdox pytest-django
 ```
 
-### 4 Rodar os testes referentes a cada tarefa isoladamente:
+### 4. Rodar os testes referentes a cada tarefa isoladamente:
 
 Exemplo:
 
@@ -59,7 +59,7 @@ pytest --testdox -vvs tests/tarefas/tarefa_1/
 pytest --testdox -vvs tests/tarefas/tarefa_3/
 ```
 
-- Tarefa 3
+- Tarefa 4
 
 ```shell
 pytest --testdox -vvs tests/tarefas/tarefa_4/
