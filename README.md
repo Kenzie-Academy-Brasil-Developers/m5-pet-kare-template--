@@ -1,75 +1,60 @@
 # M5 - Pet Kare
 
-## Como rodar os testes localmente
+## Preparando ambiente para execução dos testes
 
-- Verifique se os pacotes pytest e/ou pytest-testdox estão instalados globalmente em seu sistema:
-
+1. Verifique se os pacotes **pytest**, **pytest-testdox** e/ou **pytest-django** estão instalados globalmente em seu sistema:
 ```shell
 pip list
 ```
 
-- Caso seja listado o pytest e/ou pytest-testdox e/ou pytest-django em seu ambiente global, utilize os seguintes comando para desinstalá-los globalmente:
+2. Caso eles apareçam na listagem, rode os comandos abaixo para realizar a desinstalação:
 
 ```shell
-pip uninstall pytest pytest-testdox -y
+pip uninstall pytest pytest-testdox pytest-django -y
 ```
-
-<hr>
-
-## Próximos passos:
-
-### 1. Crie seu ambiente virtual:
-
+3. Após isso, crie seu ambiente virtual:
 ```shell
 python -m venv venv
 ```
 
-### 2. Ative seu venv:
+4. Ative seu ambiente virtual:
 
 ```shell
-# linux:
+# Linux e Mac:
 source venv/bin/activate
 
-# windows (powershell):
+# Windows (PowerShell):
 .\venv\Scripts\activate
 
-# windows (git bash):
+# Windows (GitBash):
 source venv/Scripts/activate
 ```
 
-### 3. Instalar o pacote <strong>pytest-testdox</strong>:
+5. Instale as bibliotecas necessárias:
 
 ```shell
 pip install pytest-testdox pytest-django
 ```
 
-### 4. Rodar os testes referentes a cada tarefa isoladamente:
+## Execução dos testes:
 
-Exemplo:
+Tarefa 1:
 
-- Tarefa 1
 
 ```shell
 pytest --testdox -vvs tests/tarefas/tarefa_1/
 ```
 
-- Tarefa 3
+Tarefa 3
 
 ```shell
 pytest --testdox -vvs tests/tarefas/tarefa_3/
 ```
 
-- Tarefa 4
+Tarefa 4
 
 ```shell
 pytest --testdox -vvs tests/tarefas/tarefa_4/
-```
-
-Você também pode rodar cada método de teste isoladamente seguindo uma substring, adicionando a flag `-k` seguido da substring a ser encontrada
-(atenção, se o pytest achar multiplos métodos que contenham a mesma substring em seu nome, ele executará todos):
-
-```shell
-pytest --testdox -vvsk test_can_not_create_pet_when_missing_keys
 ```
 
 <hr>
@@ -80,8 +65,17 @@ Você também pode rodar cada método de teste isoladamente:
 pytest --testdox -vvs caminho/para/o/arquivo/de/teste::NomeDaClasse::nome_do_metodo_de_teste
 ```
 
-Exemplo: executar somente "test_can_get_product_by_id".
+**Exemplo**: executar somente "test_can_list_pets_with_pagination".
 
 ```shell
-pytest --testdox -vvs tests/tarefas/tarefa_1/test_get_product_by_id.py::TestGetProductById::test_can_get_product_by_id
+pytest --testdox -vvs tests/tarefas/tarefa_3/test_views.py::PetViewsTest::test_can_list_pets_with_pagination
 ```
+--- 
+
+Para executar todos os testes:
+```shell
+pytest --testdox -vvs
+```
+--- 
+## Observação
+Não existem testes isolados para a tarefa 2. As funcionalidades que devem ser testadas desta tarefa estão presentes nos testes da tarefa 3.
