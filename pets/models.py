@@ -26,6 +26,7 @@ class Pet(models.model):
     Relacionamentos:
         - group: any to many
         - traits: Many to Many
+
     """
 
     name = models.CharField(max_length=50)
