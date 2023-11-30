@@ -14,7 +14,7 @@ class SexField(models.TextChoices):
 
 
 # Create your models here.
-class Pet(models.model):
+class Pet(models.Model):
     """class Pet(models.model):
     representação de um pet no petshop.
 
