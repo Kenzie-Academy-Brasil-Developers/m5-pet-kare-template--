@@ -35,3 +35,7 @@ class Pet(models.model):
     sex = models.CharField(
         max_length=20, choices=SexField.choices, default=SexField.NOT_INFORMED
     )
+
+    group = models.ForeignKey(
+        "groups.Group", on_delete=models.PROTECT, related_name="pets"
+    )
