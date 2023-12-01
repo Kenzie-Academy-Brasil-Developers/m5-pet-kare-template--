@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from groups.serializers import GroupSerializer
 
 from pets.models import SexField
 
@@ -14,6 +15,6 @@ class PetSerializer(serializers.Serializer):
         max_lenght=20, choices=SexField.choices, default=SexField.NOT_INFORMED
     )
 
-    group = ...
+    group = GroupSerializer()
 
     traits = ...
