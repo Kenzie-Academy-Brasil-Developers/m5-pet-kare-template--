@@ -9,3 +9,6 @@ class Trait(models.Model):
         "pets.Pet",
         related_name="traits"
     )
+
+    def __repr__(self) -> str:
+        return f"<[{self.name}]>"

@@ -1,7 +1,9 @@
 from rest_framework import serializers
+
 from groups.serializers import GroupSerializer
 from traits.serializers import TraitSerializer
-from models import PetSex
+
+from .models import PetSex
 
 
 class PetSerializer(serializers.Serializer):

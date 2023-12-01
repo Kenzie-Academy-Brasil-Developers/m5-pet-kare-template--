@@ -21,3 +21,6 @@ class Pet(models.Model):
         on_delete=models.PROTECT,
         related_name="pets"
     )
+
+    def __repr__(self) -> str:
+        return f"<[{self.name}] {self.sex}>"
