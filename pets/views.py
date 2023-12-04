@@ -6,55 +6,79 @@ from .serializers import PetSerializer
 from traits.models import Trait
 from groups.models import Group
 
-import ipdb
+# import ipdb
 
 from rest_framework.pagination import PageNumberPagination
 
 
 class PetView(APIView, PageNumberPagination):
+
+    def get(self, request: Request) -> Response:
+        by_trait = request.query_params.get("trait_name", None)
+        if by_trait:
+            # pets = Pet.objects.filter(trait_name__icontains=by_trait)
+            pets = Pet.objects.filter(traits__name__icontains=by_trait)
+        else:
+            pets = Pet.objects.all()
+        result = self.paginate_queryset(pets, request)
+        serializer = PetSerializer(result, many=True)
+        return self.get_paginated_response(serializer.data)
+
     def post(self, request: Request) -> Response:
         serializer = PetSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
-        ipdb.set_trace()
-        pet = Pet.objects.create(**serializer.validated_data)
-        # group
         groups_data = serializer.validated_data.pop("group")
+        try:
+            group = Group.objects.get(scientific_name=groups_data["scientific_name"])
+        except Group.DoesNotExist:
+            group = Group.objects.create(**groups_data)
 
-        for current_group in groups_data:
-            try:
-                group = Group.objects.get(current_group["group"])
-                group.pets.add(pet)
-            except Group.DoesNotExist:
-                group = Group.objects.create(**current_group)
-                group.pets.add(pet)
+        pet = Pet.objects.create(**serializer.validated_data, group=group)
+
         # traits
         traits_data = serializer.validated_data.pop("traits")
 
-        # traits = []
 
         for current_trait in traits_data:
-            #     trait = Trait.objects.create(**current_trait)
-            #     traits.append(trait)
             try:
                 trait = Trait.objects.get(
-                    name__iexact=current_trait["trait_name"]
+                    name__iexact=current_trait["name"]
                 )
-                trait.pets.add(pet)
             except Trait.DoesNotExist:
                 trait = Trait.objects.create(**current_trait)
-                trait.pets.add(pet)
+            pet.traits.add(trait)
 
         # pet.traits.set(traits)
         serializer = PetSerializer(pet)
 
         return Response(serializer.data, status.HTTP_201_CREATED)
 
-    def get(self, request):
-        pets = Pet.objects.all()
-        result_page = self.paginate_queryset(pets, request, view=self)
-        serializer = PetSerializer(result_page, many=True)
 
-        return self.get_paginated_response(serializer.data)
+class PetDetailView(APIView):
+    def get(self, request: Request, pet_id: int) -> Response:
+        error_message = "Not found"
+        try:
+            found_pet = Pet.objects.get(pk=pet_id)
+        except Pet.DoesNotExist:
+            return Response(
+                {"detail": error_message},
+                status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = PetSerializer(found_pet)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    def delete(self, request: Request, pet_id: int) -> Response:
+        error_message = "Not found"
+        try:
+            remove_pet = Pet.objects.get(pk=pet_id)
+        except Pet.DoesNotExist:
+            return Response(
+                {"detail": error_message},
+                status.HTTP_404_NOT_FOUND
+            )
+
+        remove_pet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
